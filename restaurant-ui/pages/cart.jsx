@@ -10,28 +10,29 @@ import {
 import axios from 'axios'
 import { useRouter } from 'next/router'
 import {reset} from '../redux/cartSlice'
+import OrderDetail from '../components/OrderDetail'
 
 const Cart = () => {
     const cart = useSelector((state) => state.cart);
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
+    const [cash, setCash] = useState(false);
     const amount = cart.total;
-    const currency = "USD"
-    const style = {layout:"vertical"}
-
+    const currency = "USD";
+    const style = {layout:"vertical"};
     const dispatch = useDispatch();
-    const router = useRouter()
+    const router = useRouter();
 
     const createOrder = async (data) => {
       try{
-        const res = await axios.post('http://localhost:3000/api/orders', data)
-        res.status === 201 && router.push('/orders/' + res.data._id)
-        dispatch(reset())
+        const res = await axios.post('http://localhost:3000/api/orders', data);
+        res.status === 201 && router.push('/orders/' + res.data._id);
+        dispatch(reset());
       }catch(err){
         console.log(err)
       }
     }
 
-      // Custom component to wrap the PayPalButtons and handle currency changes
+  // Custom component to wrap the PayPalButtons and handle currency changes
   const ButtonWrapper = ({ currency, showSpinner }) => {
     // usePayPalScriptReducer can be use only inside children of PayPalScriptProviders
     // This is the main reason to wrap the PayPalButtons in a new component
@@ -161,7 +162,7 @@ const Cart = () => {
                 {
                     open ? (
                     <div className={styles.paymentMethods}>
-                        <button className={styles.payButton}>CASH ON DELIVERY</button>
+                        <button className={styles.payButton} onClick={() => setCash(true)}>CASH ON DELIVERY</button>
                         <PayPalScriptProvider
                             options={{
                                 "client-id":
@@ -182,6 +183,11 @@ const Cart = () => {
                 }
             </div>
         </div>
+        {
+          cash && (
+            <OrderDetail total={cart.total} createOrder={createOrder}/>
+          )
+        }
     </div>
   )
 }
